@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(docker build:*)",
+      "Bash(go test:*)",
+      "Bash(grep:*)",
+      "Bash(git commit:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(find:*)",
+      "Bash(echo $SHELL)",
+      "Bash(ps:*)",
+      "Bash(ls:*)",
+      "Bash(zsh:*)",
+      "Bash(curl:*)",
+      "Bash(nats stream:*)",
+      "Bash(go run:*)",
+      "Bash(LOG_LEVEL=debug make dev-worker)",
+      "Bash(make test:*)",
+      "Bash(npm test)",
+      "mcp__playwright__browser_navigate_back",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7",
+    "exa",
+    "playwright"
+  ]
+}

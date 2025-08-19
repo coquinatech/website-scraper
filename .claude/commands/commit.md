@@ -1,0 +1,1 @@
+Bundle all outstanding into logical commits, and then commit them with good messages. Ensure we're not committing any senstive data. Run all tests in server, and make sure typescript has no warnings or errors.
