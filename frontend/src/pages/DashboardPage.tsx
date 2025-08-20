@@ -141,7 +141,7 @@ export function DashboardPage() {
             description="Dashboards and visualization"
           />
           <ObservabilityLink 
-            href="http://localhost:3333/metrics" 
+            href="http://localhost:5000/metrics" 
             title="Prometheus Metrics"
             description="Raw metrics endpoint"
           />

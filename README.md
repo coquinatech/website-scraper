@@ -1,24 +1,46 @@
-# AI Agent Development Template 🤖
+# AI Agent Development Template
 
-A production-ready starter template specifically designed for developing with AI coding agents (Claude Code, GitHub Copilot Workspace, Cursor, Windsurf). Features pre-configured AI agents, persistent sessions, isolated service containers, and comprehensive observability to help AI agents understand and debug your code.
+A production-ready template optimized for AI-assisted development. After two years of forcing myself to use AI for code generation, I've discovered that codebases need to be specifically architected for AI agents to be truly effective. This template embodies those learnings.
 
-## 🌟 Features
+**TL;DR**: This is the battle-tested template I use for all my AI-coded projects - structured to maximize AI agent effectiveness while maintaining human-friendly best practices.
 
-### 🤖 AI Agent Integration
+## Why This Template Exists
 
-- **Pre-configured AI Agents**: Claude Code, GitHub Copilot Workspace, Cursor, and Windsurf ready to use
-- **Persistent Sessions**: Volumes configured to maintain AI agent authentication across container refreshes
-- **Isolated Service Architecture**: Frontend and backend run as separate containers with live reload, while the main container runs AI agents
-- **Observable Development**: AI agents can inspect running services through centralized Loki logs, avoiding timeout issues from trying to start/stop services
+Modern AI coding agents like Claude Code and Cursor can write impressive amounts of code, but they often struggle with:
 
-### 🎯 Core Stack
+- Starting/stopping services (hanging the agent)
+- Maintaining context across sessions
+- Understanding what's happening in running code
+- Working with untested or poorly structured codebases
+
+This template solves these problems by following **8 core principles for AI-optimized development**:
+
+1. **Tested**: Fast, comprehensive test suites provide immediate feedback
+2. **Modular**: Minimized context requirements through modular architecture
+3. **Sandboxed**: DevContainers allow agents to run wild safely
+4. **Process Managed**: Services run in separate threads with live reload
+5. **Repeatable**: Trivial environment setup enables parallel development
+6. **Documented**: Clear plans persist across sessions as long-term memory
+7. **Tooled**: MCPs and specialized tools give agents deterministic actions
+8. **Structured**: Static typing and compilation catch AI-generated bugs early
+
+## Features
+
+### AI-First Architecture
+
+- **Isolated Service Containers**: Frontend and backend run separately with live reload - agents never need to manage processes
+- **Persistent Sessions**: Volume mounts preserve AI agent authentication and history across container restarts
+- **Observable Development**: Centralized Loki logging lets agents inspect all services without hanging
+- **Pre-configured Agents**: Claude Code and Cursor ready out of the box
+
+### Core Stack
 
 - **Backend**: TypeScript + Fastify with hot-reload in isolated container
 - **Frontend**: React + Vite + Tailwind CSS in isolated container
 - **Database**: PostgreSQL + Drizzle ORM with migrations
 - **Caching**: Redis (optional)
 
-### 📊 Complete Observability (AI-Friendly)
+### Complete Observability (AI-Friendly)
 
 - **Grafana**: Beautiful dashboards and visualization
 - **Prometheus**: Metrics collection and alerting
@@ -26,7 +48,7 @@ A production-ready starter template specifically designed for developing with AI
 - **Tempo**: Distributed tracing with OpenTelemetry
 - **Alloy**: Automatic log forwarding from all containers to Loki
 
-### 🛠️ Developer Experience
+### Developer Experience
 
 - **DevContainer**: Fully configured development environment
 - **Hot Reload**: Both frontend and backend
@@ -34,68 +56,76 @@ A production-ready starter template specifically designed for developing with AI
 - **API Documentation**: Auto-generated Swagger UI
 - **Database Studio**: Drizzle Studio GUI for database management
 
-### 🧪 Testing & Quality
+### Testing & Quality
 
 - **Vitest**: Fast unit and integration testing
 - **MSW**: API mocking for frontend tests
 - **ESLint & Prettier**: Code quality and formatting
 - **Pre-configured CI/CD**: GitHub Actions ready
 
-## 🚀 Quick Start
+## Quick Start
+
+### The Power of This Approach
+
+This template enables AI agents to deliver features in days that traditionally take weeks. The optimizations feel odd at first - spending time structuring for AI rather than just coding - but the productivity gains are transformative.
 
 ### Prerequisites
 
-- Docker Desktop
-- VS Code with Dev Containers extension
+- Docker
+- IDE that supports devcontainers (VSCode, Jetbrains, etc)
 - Git
 
 ### Setup
 
-1. **Clone the repository**
+1. **Fork and clone the repository**
+
+   - Fork this repository to your own GitHub account
+   - Clone your forked repository:
 
    ```bash
-   git clone <your-repo-url>
+   git clone <your-forked-repo-url>
    cd <your-project>
    ```
 
-2. **Open in VS Code**
+2. **Open in your IDE**
 
    ```bash
-   code .
+   code .  # For VS Code
    ```
 
 3. **Reopen in Container**
 
-   - Press `F1` → "Dev Containers: Reopen in Container"
+   - VS Code: Press `F1` → "Dev Containers: Reopen in Container"
    - Wait for container to build (first time only)
-   - AI agents and services will start automatically
+   - All services start automatically - no manual setup needed!
 
-4. **Services are already running!**
-   
-   The template automatically starts:
-   - Backend service (isolated container with live reload)
-   - Frontend service (isolated container with live reload)
-   - All observability tools (Grafana, Loki, Prometheus, Tempo)
-   
-   No need to manually start services - AI agents can immediately begin working!
+4. **Everything is already running!**
+
+   The magic of this template:
+
+   - Backend service runs in isolation with live reload
+   - Frontend service runs in isolation with live reload
+   - Observability stack (Grafana, Loki, Prometheus, Tempo) is ready
+   - AI agents can immediately start working without process management
 
 5. **Access the application**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:5000
    - Grafana: http://grafana:3000 (admin/admin)
-   
 6. **Start coding with AI agents**
+
    ```bash
-   # Claude Code
+   # Claude Code (recommended for complex features)
    claude code
 
-   # GitHub Copilot Workspace
-   gh copilot workspace
+   # Use /plan for feature planning
+   # Use /execute_plan to implement
 
-   # Cursor/Windsurf - use their respective CLIs
+   # Cursor is also pre-configured
+   cursor .
    ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
@@ -122,7 +152,7 @@ A production-ready starter template specifically designed for developing with AI
     └── grafana/          # Dashboards & datasources
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -134,33 +164,41 @@ cp .env.example .env
 
 Key variables:
 
-- `PORT` - Backend server port (default: 3333)
+- `PORT` - Backend server port (default: 5000)
 - `DATABASE_URL` - PostgreSQL connection string
 - `VITE_API_URL` - Frontend API base URL
 - `LOG_LEVEL` - Logging verbosity (debug/info/warn/error)
 
-## 📚 Development Guide
+## Development Guide
 
 ### Backend Development
 
+The backend runs in its own Docker container managed by devcontainer's docker-compose. It's already running with hot-reload when you open the devcontainer.
+
 ```bash
 cd server
-npm run dev          # Start with hot-reload
+npm run dev          # Already running in container with hot-reload
 npm run build        # Build for production
 npm run typecheck    # Type checking
 npm run lint         # Lint code
 npm run test         # Run tests
 ```
 
-### Frontend Development
+**Note**: The backend service auto-restarts on code changes. You never need to manually restart it.
+
+### Frontend Development  
+
+The frontend runs in its own Docker container managed by devcontainer's docker-compose. It's already running with hot-reload when you open the devcontainer.
 
 ```bash
 cd frontend
-npm run dev          # Start dev server
+npm run dev          # Already running in container with hot-reload
 npm run build        # Build for production
 npm run preview      # Preview production build
 npm run test         # Run tests
 ```
+
+**Note**: The frontend service auto-reloads on code changes via Vite's HMR. You never need to manually restart it.
 
 ### Database Management
 
@@ -171,7 +209,7 @@ npm run db:migrate   # Apply migrations
 npm run db:studio    # Open Drizzle Studio (port 4983)
 ```
 
-## 📊 Observability
+## Observability
 
 ### Accessing Tools
 
@@ -200,7 +238,7 @@ npm run db:studio    # Open Drizzle Studio (port 4983)
 
 OpenTelemetry is pre-configured. Traces are automatically collected and sent to Tempo.
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 
@@ -221,7 +259,7 @@ npm run test:coverage
 - Integration tests: In `__tests__` directories
 - E2E tests: In `e2e/` directory
 
-## 📦 Building for Production
+## Building for Production
 
 ### Backend
 
@@ -246,7 +284,7 @@ docker build -t my-app-backend ./server
 docker build -t my-app-frontend ./frontend
 ```
 
-## 🔒 Security
+## Security
 
 - Helmet.js for security headers
 - Rate limiting configured
@@ -255,25 +293,17 @@ docker build -t my-app-frontend ./frontend
 - SQL injection protection via Drizzle ORM
 - XSS protection in React
 
-## 📝 API Documentation
+## API Documentation
 
 Swagger documentation is automatically generated and available at:
 
-- http://localhost:3333/documentation
+- http://localhost:5000/documentation
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with:
 
@@ -284,26 +314,33 @@ Built with:
 - [Grafana Stack](https://grafana.com/)
 - [OpenTelemetry](https://opentelemetry.io/)
 
-## 🤖 AI Agent Development Tips
+## AI Agent Development Philosophy
 
-### Why This Template?
+### The Problem with Traditional Codebases
 
-This template solves common AI agent development challenges:
+After two years of AI-assisted development, I've learned that the longer an agent continues down a path with bad assumptions, the harder it is to recover. Traditional codebases lack the feedback loops and structure that AI agents need to be effective.
 
-1. **Service Management**: Services run in separate containers, preventing AI agents from getting stuck trying to start/stop servers
-2. **Persistent Auth**: Volume mounts preserve AI agent sessions across container restarts
-3. **Observable Debugging**: AI agents can query Loki logs to understand what's happening in running services
-4. **Live Reload**: Both frontend and backend auto-reload on code changes, AI agents see results immediately
-5. **Isolated Environments**: Each service has its own container, preventing conflicts and simplifying debugging
+### How This Template Solves It
+
+**Fast Feedback Loops Are Paramount**: Every architectural decision prioritizes rapid, clear feedback to prevent agents from spiraling down incorrect paths.
+
+**Process Management**: Your code runs in separate threads from the agent. The web server runs in its own container with live reload, sending logs to Loki where the agent can check them - preventing the common issue of agents hanging when trying to start services.
+
+**Planning Over Coding**: This template encourages generating clear, step-by-step plans before implementation. These plans persist across sessions, acting as long-term memory for the agent. Use multiple AI models (Claude Code, Gemini, Codex) to check each other's work during planning.
+
+**Observable by Design**: Instead of having agents run `docker logs` or `ps` commands (often leading down rabbit holes), all logs drain to Loki with Alloy. Agents simply query Loki to see errors immediately after changes.
 
 ### Best Practices
 
-- Let services run continuously - AI agents should focus on code, not process management
-- Use Grafana/Loki to inspect service behavior instead of restarting services
-- The CLAUDE.md file provides context to AI agents about your project structure
-- All AI agent tools and CLIs are pre-installed in the main container
+- **Never let agents manage processes** - Services run continuously in containers
+- **Test fast and often** - Quick feedback prevents cascading errors
+- **Plan before coding** - Use `/plan` and `/execute_plan` commands in Claude Code
+- **Keep modules small** - Minimize context requirements for each task
+- **Use static typing** - TypeScript compilation catches a class of bugs AI creates
+- **Query logs, don't restart** - Use Loki queries instead of service restarts
+- **Mount home directories** - Preserve agent sessions across container restarts
 
-## 💡 General Tips
+## General Tips
 
 - Use the DevContainer for consistent development environment
 - Check Grafana dashboards for performance insights
@@ -311,13 +348,13 @@ This template solves common AI agent development challenges:
 - Use the API testing page at `/api-test` for quick debugging
 - Database Studio is great for data exploration
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Port already in use
 
 ```bash
 # Find process using port
-lsof -i :3333
+lsof -i :5000
 # Kill process
 kill -9 <PID>
 ```
@@ -337,7 +374,7 @@ docker-compose -f .devcontainer/docker-compose.yml restart postgres
 - Ensure backend is running on expected port
 - Check CORS_ORIGIN in backend configuration
 
-## 📞 Support
+## Support
 
 For issues and questions:
 
@@ -347,4 +384,4 @@ For issues and questions:
 
 ---
 
-Happy coding! 🎉
+Happy coding!
