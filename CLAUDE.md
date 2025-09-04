@@ -1,34 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with this template.
+This file provides guidance to Claude Code (claude.ai/code) when working with this website archiving project.
 
 ## Project Overview
 
-This is a production-ready development template featuring:
+This is a standalone website archiving service that creates static snapshots of websites for offline viewing, similar to archive.is or the Wayback Machine.
 
-- **Backend**: Minimal Fastify server with TypeScript
-- **Frontend**: Minimal React + Vite application
-- **Database**: PostgreSQL with Drizzle ORM
-- **Observability**: Complete stack with Grafana, Loki, Tempo, and Prometheus
-- **Development**: DevContainer with all tools pre-configured
+**Main Features**:
+- Full page rendering with Playwright (handles JavaScript-heavy sites)
+- Complete resource downloading (HTML, CSS, JS, images, fonts, SVGs)
+- URL rewriting for local viewing
+- Directory structure preservation
+- Configurable crawl depth and domain boundaries
+- SVG sprite support with fragment preservation
 
 All development of this project is done in a .devcontainer.
-
-Most importantly, the server is running on server:5000 and the client at frontend:5173 via a docker compose process. It will hot reload new changes automatically, so never attempt to restart it.
-
-To get server logs (2 minute example):
-
-curl -G -s "http://loki:3100/loki/api/v1/query_range" \
- --data-urlencode 'query={service="server"}' \
- --data-urlencode "start=$(date -d '2 minutes ago' +%s)000000000" \
-    --data-urlencode "end=$(date +%s)000000000" | jq -r '.data.result[].values[][1]'
-
-To get client logs (10 minute example):
-
-curl -G -s "http://loki:3100/loki/api/v1/query_range" \
- --data-urlencode 'query={service="frontend"}' \
- --data-urlencode "start=$(date -d '10 minutes ago' +%s)000000000" \
-    --data-urlencode "end=$(date +%s)000000000" | jq -r '.data.result[].values[][1]'
 
 ## Architecture
 
@@ -36,149 +22,179 @@ curl -G -s "http://loki:3100/loki/api/v1/query_range" \
 
 ```
 .
-├── server/               # Backend application
-│   ├── src/
-│   │   ├── controllers/  # HTTP handlers
-│   │   ├── services/     # Business logic
-│   │   ├── routes/       # API routes
-│   │   ├── db/          # Database schema and migrations
-│   │   └── utils/       # Utilities and helpers
-│   └── drizzle/         # SQL migrations
-├── frontend/            # Frontend application
-│   └── src/
-│       ├── pages/       # React pages
-│       ├── components/  # React components
-│       └── services/    # API client
-└── .devcontainer/       # DevContainer configuration
-    ├── grafana/         # Grafana dashboards
+├── scraper/             # Main archiving service
+│   ├── main.ts         # Core scraper implementation
+│   ├── package.json    # Dependencies and scripts
+│   ├── tsconfig.json   # TypeScript configuration
+│   └── mirror/         # Output directory for archives (git-ignored)
+└── .devcontainer/      # DevContainer configuration
     └── docker-compose.yml
-
 ```
 
-## Key Features
+## Key Components
 
-### Backend (Port 5000)
+### Website Scraper (`scraper/main.ts`)
 
-- Health check endpoint (`/health`)
-- Prometheus metrics (`/metrics`)
-- Example API endpoints (`/api/example`)
-- Mock authentication (`/api/auth/login`)
-- Swagger documentation (`/documentation`)
+The main `mirrorSite` function accepts:
+- `startUrl`: The URL to begin archiving
+- `outdir`: Output directory (default: "mirror")
+- `maxDepth`: Maximum crawl depth (default: 2)
+- `sameDomain`: Stay within the same domain (default: true)
 
-### Frontend (Port 5173)
-
-- Home page with feature overview
-- Dashboard with live metrics
-- API testing console
-- Responsive Tailwind CSS design
-
-### Observability Stack
-
-- **Grafana** (http://grafana:3000) - Dashboards and visualization
-- **Loki** - Log aggregation
-- **Tempo** - Distributed tracing
-- **Prometheus** - Metrics collection
+**Core functionality**:
+1. Browser automation via Playwright
+2. Resource interception and downloading
+3. CSS parsing for embedded resources
+4. HTML rewriting with relative paths
+5. Directory structure preservation
 
 ## Essential Commands
 
 ### Development
 
 ```bash
-# Backend
-cd server
-npm run dev          # Start dev server with hot reload
-npm run build        # Compile TypeScript
-npm run typecheck    # Type check without building
+cd scraper
 
-# Frontend
-cd frontend
-npm run dev          # Start Vite dev server
-npm run build        # Build for production
-npm run preview      # Preview production build
+# Install dependencies
+npm install
+
+# Install Playwright browser
+npx playwright install chromium
+
+# Run the scraper
+npm run scrape
+
+# Development mode with hot reload
+npm run dev
+
+# Build for production
+npm run build
+
+# Type checking
+npm run typecheck
 ```
 
-### Database
+### Usage
+
+Edit the URL in `main.ts`:
+```typescript
+await mirrorSite("https://example.com", "mirror", 2, true);
+```
+
+Then run:
+```bash
+npm run scrape
+```
+
+## Serving Archived Sites
+
+After archiving, serve the mirror directory:
 
 ```bash
-cd server
-npm run db:generate  # Generate migration from schema changes
-npm run db:migrate   # Apply migrations
-npm run db:studio    # Open Drizzle Studio GUI (port 4983)
+cd scraper/mirror
+python3 -m http.server 8000
+# Then open: http://localhost:8000/[domain]/
 ```
 
-### Testing
+## Key Implementation Details
 
-```bash
-# Backend
-cd server
-npm test             # Run tests
+### URL Processing
 
-# Frontend
-cd frontend
-npm test             # Run tests
+- **Fragment preservation**: SVG sprite references (`#icon`) are preserved
+- **Resource deduplication**: Tracks downloaded resources to avoid duplicates
+- **Path sanitization**: Handles long filenames and special characters
+
+### CSS Resource Extraction
+
+The scraper processes CSS files to:
+1. Extract `url()` references
+2. Download referenced resources (fonts, images)
+3. Rewrite paths to relative references
+
+### Directory Structure
+
+Archives maintain the original site structure:
+```
+mirror/
+└── example.com/
+    ├── index.html
+    ├── css/
+    │   ├── style.css
+    │   └── fonts.css
+    ├── js/
+    │   └── script.js
+    ├── fonts/
+    │   └── font.woff2
+    └── images/
+        └── logo.png
 ```
 
-## Development Workflow
+## Extending the Scraper
 
-1. **Backend changes**: Edit files in `server/src/`, server auto-reloads
-2. **Frontend changes**: Edit files in `frontend/src/`, Vite hot-reloads
-3. **Database changes**:
-   - Modify schema in `server/src/db/schema/`
-   - Run `npm run db:generate`
-   - Run `npm run db:migrate`
+### Adding Resource Types
 
-## Extending the Template
+To handle new resource types, modify the response handler:
+```typescript
+if (["document", "stylesheet", "image", "font", "script", "media", "newtype"].includes(type)) {
+  // Handle new type
+}
+```
 
-### Adding a New API Endpoint
+### Custom URL Rewriting
 
-1. Create controller in `server/src/controllers/`
-2. Create route in `server/src/routes/`
-3. Register route in `server/src/routes/index.ts`
-4. Add API client method in `frontend/src/services/api.ts`
+Modify the `urlAttributes` object to handle new HTML elements:
+```typescript
+const urlAttributes = {
+  'a': 'href',
+  'link': 'href',
+  'custom-element': 'data-src',
+  // Add new elements here
+};
+```
 
-### Adding a New Page
+### Rate Limiting
 
-1. Create page component in `frontend/src/pages/`
-2. Add route in `frontend/src/App.tsx`
-3. Add navigation link in `frontend/src/components/Layout.tsx`
-
-### Adding Database Tables
-
-1. Create schema file in `server/src/db/schema/`
-2. Export from `server/src/db/schema/index.ts`
-3. Generate and apply migration
-
-## Environment Variables
-
-See `.env.example` for all configuration options. Key variables:
-
-- `PORT` - Backend server port
-- `DATABASE_URL` - PostgreSQL connection string
-- `VITE_API_URL` - Frontend API base URL
-- `LOG_LEVEL` - Logging verbosity
+To add rate limiting between requests:
+```typescript
+// Add delay between page loads
+await new Promise(resolve => setTimeout(resolve, 1000));
+```
 
 ## Important Notes
 
-- The backend server runs on port 5000 by default
-- The frontend dev server runs on port 5173 by default
-- All development is done in the devcontainer
-- PostgreSQL and Redis are already running in containers
-- Observability stack is pre-configured and running
+- The scraper creates a complete offline copy of websites
+- JavaScript execution is handled by Playwright's Chromium instance
+- Large sites may take significant time and disk space
+- The `mirror/` directory is git-ignored by default
+- Always respect robots.txt and website terms of service
 
 ## Common Issues
 
-### Port Already in Use
+### Long Filename Errors
 
-- Check for running processes: `ps aux | grep node`
-- Kill specific port: `kill -9 $(lsof -ti:PORT)`
+Some URLs create filenames exceeding filesystem limits. The scraper truncates these automatically.
 
-### Database Connection Failed
+### CORS and External Resources
 
-- Ensure PostgreSQL is running: `docker ps`
-- Check DATABASE_URL in environment
+External domain resources (CDNs, APIs) are downloaded if referenced but won't include cross-origin dynamic content.
 
-### Frontend Can't Connect to Backend
+### JavaScript-Heavy Sites
 
-- Verify backend is running on expected port
-- Check VITE_API_URL configuration
-- Ensure CORS_ORIGIN includes frontend URL
+Sites relying heavily on API calls may not archive completely. The scraper captures the rendered DOM at page load completion.
+
+### Missing Resources
+
+If resources are missing in the archive:
+1. Check if they load via JavaScript after initial render
+2. Verify the resource domain is within crawl scope
+3. Increase the `waitUntil: "networkidle"` timeout
+
+## Future Enhancements
+
+Potential improvements tracked in comments:
+- Resource deduplication by content hash
+- Parallel crawling for faster archiving
+- WARC format export
+- Resume interrupted crawls
+- Progress reporting
+- Database integration for metadata
