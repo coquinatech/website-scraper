@@ -1,5 +1,5 @@
 {
-  "name": "Kadre Devcontainer Template",
+  "name": "Webiste Scraper",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "privileged": true,

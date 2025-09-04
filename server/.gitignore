@@ -1,7 +1,0 @@
-
-# Build output
-dist/
-
-# Test environment files
-.env.test
-.vitest-cache

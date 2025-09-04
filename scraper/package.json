@@ -1,0 +1,37 @@
+{
+  "name": "website-scraper-service",
+  "version": "1.0.0",
+  "description": "Standalone website archiving and scraping service",
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "scrape": "tsx main.ts",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "web-scraper",
+    "archive",
+    "playwright",
+    "cheerio",
+    "website-mirror"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

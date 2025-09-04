@@ -1,9 +1,0 @@
-node_modules
-dist
-build
-coverage
-.env
-.env.*
-*.min.js
-*.min.css
-src/api/generated

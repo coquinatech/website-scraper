@@ -23,14 +23,15 @@
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_take_screenshot",
       "Bash(npm test:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run scrape:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7",
-    "exa",
     "playwright"
   ]
 }
