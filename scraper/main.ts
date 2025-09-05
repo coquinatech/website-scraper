@@ -1,17 +1,22 @@
 import * as cheerio from "cheerio";
-import * as fs from "fs";
 import * as path from "path";
 import { chromium } from "playwright";
 import { URL } from "url";
+import type { StorageEngine } from "./storage/index.js";
+import { createStorageEngine, generateArchivePath, getStorageConfig } from "./storage/index.js";
 
-async function mirrorSite(startUrl: string, outdir = "mirror", maxDepth = 2, sameDomain = true) {
+async function mirrorSite(startUrl: string, storage: StorageEngine, archivePath: string, maxDepth = 2, sameDomain = true) {
   const visited = new Set<string>();
   const savedResources = new Map<string, string>(); // Map original URL to local path
   const queue: Array<{ url: string; depth: number }> = [{ url: startUrl, depth: 0 }];
   const baseHost = new URL(startUrl).host;
   const baseUrl = new URL(startUrl);
 
-  fs.mkdirSync(outdir, { recursive: true });
+  // Initialize storage
+  await storage.initialize();
+  
+  // Clean up any incomplete uploads from previous runs
+  await storage.cleanupIncomplete(archivePath);
 
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -53,13 +58,10 @@ async function mirrorSite(startUrl: string, outdir = "mirror", maxDepth = 2, sam
     }
     
     const localPath = urlToLocalPath(url);
-    const fullPath = path.join(outdir, localPath);
+    const storagePath = path.join(archivePath, localPath);
     
-    // Create directory structure
-    const dir = path.dirname(fullPath);
-    fs.mkdirSync(dir, { recursive: true });
-    
-    fs.writeFileSync(fullPath, buffer);
+    // Save to storage engine
+    await storage.save(storagePath, buffer);
     savedResources.set(url, localPath);
     
     return localPath;
@@ -67,7 +69,7 @@ async function mirrorSite(startUrl: string, outdir = "mirror", maxDepth = 2, sam
 
   // Calculate relative path from one file to another
   function getRelativePath(fromPath: string, toPath: string): string {
-    // Both paths are relative to outdir
+    // Both paths are relative to archive root
     const from = path.dirname(fromPath);
     let relative = path.relative(from, toPath);
     
@@ -361,13 +363,24 @@ async function mirrorSite(startUrl: string, outdir = "mirror", maxDepth = 2, sam
   }
 
   await browser.close();
-  console.log(`\nArchiving complete! Files saved to: ${outdir}/`);
+  console.log(`\nArchiving complete! Archive saved to: ${archivePath}`);
   console.log(`Total resources saved: ${savedResources.size}`);
-  console.log(`\nTo view the archive, serve the '${outdir}' directory with a web server.`);
-  console.log(`Example: cd ${outdir} && python3 -m http.server 8000`);
-  console.log(`Then open: http://localhost:8000/${baseHost}/`);
+  console.log(`Storage engine: ${storage.constructor.name}`);
 }
 
 (async () => {
-  await mirrorSite("https://dylanwatt.com", "mirror", 2, true);
+  // Get storage configuration from environment
+  const config = getStorageConfig();
+  const storage = createStorageEngine(config);
+  
+  // Generate archive path with timestamp
+  const targetUrl = "https://dylanwatt.com";
+  const domain = new URL(targetUrl).host;
+  const archivePath = generateArchivePath(domain);
+  
+  console.log(`Starting archive of ${targetUrl}`);
+  console.log(`Storage engine: ${config.engine}`);
+  console.log(`Archive path: ${archivePath}`);
+  
+  await mirrorSite(targetUrl, storage, archivePath, 2, true);
 })();

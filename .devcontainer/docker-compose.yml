@@ -25,6 +25,15 @@ services:
       - OTEL_TRACES_SAMPLER=always_on
       # Client dev server runs in the same container
       - VITE_API_URL=http://localhost:5000
+      # Storage configuration
+      - STORAGE_ENGINE=s3
+      - STORAGE_PATH=./mirror
+      - S3_ENDPOINT=http://minio:9010
+      - S3_ACCESS_KEY=minioadmin
+      - S3_SECRET_KEY=minioadmin
+      - S3_BUCKET=website-archives
+      - S3_USE_SSL=false
+      - S3_FORCE_PATH_STYLE=true
 
   postgres:
     image: postgres:16-alpine
@@ -159,6 +168,24 @@ services:
       - prometheus
     # Add "forwardPorts": ["3000"] to **devcontainer.json** to forward Grafana locally.
 
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9010:9010"   # API port
+      - "9011:9011"   # Console UI port
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_ADDRESS=:9010
+      - MINIO_CONSOLE_ADDRESS=:9011
+    command: server /data --address ":9010" --console-address ":9011"
+    volumes:
+      - minio-data:/data
+    # Add "forwardPorts": ["9010", "9011"] to **devcontainer.json** to forward MinIO locally.
+    # Port 9010: MinIO API endpoint
+    # Port 9011: MinIO Console Web UI
+
 volumes:
   postgres-data:
   redis-data:
@@ -167,3 +194,4 @@ volumes:
   grafana-data:
   tempo-data:
   prometheus-data:
+  minio-data:
